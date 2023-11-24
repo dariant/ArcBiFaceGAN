@@ -17,13 +17,13 @@ import tempfile
 import torch
 import dnnlib
 
-from training_scripts_DB_SG2_class import training_loop as training_loop
+from DB_SG2_with_id_features import training_loop as training_loop
 from metrics import metric_main
 from torch_utils import training_stats
 from torch_utils import custom_ops
 
 
-which_training_scripts = "training_scripts_DB_SG2_class"
+which_training_scripts = "DB_SG2_with_id_features"
 which_networks = "networks"
 which_dataset = "dataset"
 
@@ -132,7 +132,7 @@ def setup_training_loop_kwargs(
     assert isinstance(cond, bool)
     if cond:
         if not args.training_set_kwargs.use_labels:
-            raise UserError('--cond=True requires labels specified in dataset.json')
+            raise UserError('--cond=True requires labels specified in identity_features.json')
         desc += '-cond'
     else:
         args.training_set_kwargs.use_labels = False
