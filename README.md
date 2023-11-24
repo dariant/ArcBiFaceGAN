@@ -34,8 +34,6 @@ The framework is made up of an identity-conditioned Dual-Branch StyleGAN2, based
 
 This repository follows the [Nvidia Source Code License](https://nvlabs.github.io/stylegan2-ada-pytorch/license.html).
 
-Additional details and instructions for running ArcBiFaceGAN will be provided in the coming days. 
-
 # Requirements and Setup:
 
 * Linux and Windows are supported, but we recommend Linux for performance and compatibility reasons.
