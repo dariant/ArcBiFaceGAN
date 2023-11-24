@@ -75,7 +75,7 @@ To train the identity-conditioned StyleGAN2 of ArcBiFaceGAN use the `training.py
 ```
 Here `--data` should point to the training dataset and `--outdir` to the output directory. To determine the weight of the NIR Discriminator on the final loss, set the `--NIR_loss_weight` accordingly. Regarding the other parameters, `--cfg` determines the model configuration (e.g. number of blocks), `--snap` defines the ... of snapshots during training,  `--batch` is the batch size,  `--mirror=1` enables horizontal flipping of training images while `--cond=1` enables training based on the identity condition. Regarding the GPU usage, set the amount of available GPUs with `--gpus` or set the `--GPU_DEVICE_NUMBER` to determine which GPU to use. 
 
-To continue training from a saved checkpoint point the `--resume` argument to the pretrained model, i.e. `--resume={path_to_pretrained_model}`. 
+To continue training from a saved checkpoint use the `--resume` argument, i.e. `--resume={path_to_pretrained_model}`. 
 
 For details on other possible arguments and available configurations check the [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch) documentation.
 
