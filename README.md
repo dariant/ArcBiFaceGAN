@@ -59,11 +59,14 @@ Images should use the naming convention `{identity}_{sample_name}.jpg`. Correspo
 
 ## Step 2. Add identity features to the training dataset:
 
+To create identity features of the training images use the script `create_training_identity_features.py`. The identity features are saved in the `identity_features.json` file in the dataset directory.
+
 ```.bash
 ./docker_run.sh python create_training_identity_features.py --data_folder="DATASETS/example_dataset" --model={path_to_recognition_model}
 ```
+
 Here the `--model` should point to the `.pth` file of a pretrained recognition model.
-Additional options also include `--gpu` that determines which GPU to use (e.g. `--gpu=0`) and `--all_or_one` that determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`).   
+Additional options also include `--gpu` that determines which GPU to use (e.g. `--gpu=0`) and `--all_or_one` that determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`). 
 
 ## Step 3. Train the identity-conditioned StyleGAN2 model:
 
