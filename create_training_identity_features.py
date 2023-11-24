@@ -72,7 +72,7 @@ def compare_all_combinations(group_arcs):
 
 # Configuration 
 @click.option('--data_folder', help='Training data (directory or zip)', metavar='PATH', required=True)
-@click.option('--model', help='Path to recognition model (pth file)', required=True)
+@click.option('--rec_model', help='Path to recognition model (pth file)', required=True)
 @click.option('--gpu', help='Which CUDA gpu to use [default: 0]', type=int, default=0, metavar='INT')
 @click.option('--all_or_one', help='Create one feature for each image [all], or one feature for each identity [one] [default: all]', default="all")
 
@@ -85,7 +85,7 @@ def main(**args):
 
     fnames = os.listdir(path_to_VIS_folder)
     
-    arcface_model = prepare_locked_ArcFace_model().to(device)
+    arcface_model = prepare_locked_ArcFace_model(args["rec_model"]).to(device)
     print(fnames)
     
     fnames.sort(key=natural_keys)
