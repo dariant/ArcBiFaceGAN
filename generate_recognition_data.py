@@ -1,21 +1,18 @@
-import argparse
-
 import torch
-from torchvision import utils, transforms
 import dnnlib
-#from model import Generator
 from DB_SG2_with_id_features import legacy as legacy
 import numpy as np 
 import os 
 import random 
-from PIL import Image
-import torch.nn.functional as F
-from Arcface_files.ArcFace_functions import preprocess_image_for_ArcFace, prepare_locked_ArcFace_model
+from Arcface_files.ArcFace_functions import prepare_locked_ArcFace_model
 import json 
 import collections 
-from facenet_pytorch import MTCNN
 from tqdm import tqdm 
+import click 
+from torchvision import utils, transforms
+from facenet_pytorch import MTCNN
 
+#########################################
 def set_all_seeds(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -23,53 +20,17 @@ def set_all_seeds(seed):
     torch.cuda.manual_seed(seed)
 
 #########################################
-def cosine_similarity(x, y):
-    dot = np.sum(np.multiply(x, y), axis=1)
-    norm = np.linalg.norm(x, axis=1) * np.linalg.norm(y, axis=1)
-    similarity = np.clip(dot/norm, -1., 1.)
-    return similarity
-#########################################
-
-#########################################
 def cosine_similarity_torch(x, y):
     dot = torch.sum(torch.multiply(x, y), axis=1)
     norm = torch.norm(x) * torch.norm(y)
     similarity = torch.clip(dot/norm, -1., 1.)
     return similarity
-#########################################
-
-
 
 #########################################
-def random_similar_cos(v, cos_similarity_threshold):
-    # Form the unit vector parallel to v:
-    u = (v / torch.norm(v))[0]
-    # Pick a random vector:
-    r = torch.randn(len(u)).to(device)
-    # Form a vector perpendicular to v:
-    u = u.float()
-    uperp = r - r.dot(u)*u
-    # Make it a unit vector:
-    uperp = uperp / torch.norm(uperp)
-    # w is the linear combination of u and uperp with coefficients costheta and sin(theta) = sqrt(1 - costheta**2), respectively:
-    w = cos_similarity_threshold * u + torch.sqrt(1 - cos_similarity_threshold**2)*uperp
-    w = w[None, :]
-
-    return w
-#########################################
-
-def generate_image_from_z(z_latent, arcface_latent):
+def generate_image_from_z(G, z_latent, arcface_latent, general_truncation_psi):
     w_latent = G.mapping(z_latent, arcface_latent, truncation_psi=general_truncation_psi)
     img, img_NIR, _ = G.synthesis(w_latent)
-    #img = img #print(img.shape)
-    #img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
     return img, img_NIR 
-
-#########################################
-def preprocess_image_for_ArcFace_torch(img): 
-    img = transforms.functional.resize(img, (112, 112))#img.reshape((112, 112))
-    img = img.float()
-    return img 
 
 #########################################
 def preprocess_generated_image_general(img):
@@ -78,8 +39,7 @@ def preprocess_generated_image_general(img):
 
 #########################################
 def prepare_for_arcface_model_torch(img): 
-    # img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8) # NOTE already done for MTCNN
-    img = transforms.functional.resize(img, (112, 112))#img.reshape((112, 112))
+    img = transforms.functional.resize(img, (112, 112))
     img = img.float()
     img = ((img / 255) - 0.5) / 0.5 
     return img 
@@ -92,25 +52,10 @@ def preprocess_generated_image_for_ArcFace_torch(img):
     return img 
 
 #########################################
-def preprocess_generated_image_for_ArcFace_pytorch(img): 
-    img = (img * 127.5 + 128).clamp(0, 255).to(torch.uint8)
-    img = transforms.functional.resize(img, (112, 112))#img.reshape((112, 112))
-    
-    img = img.float()
-    img = ((img / 255) - 0.5) / 0.5 
-
-    # img.div_(255).sub_(0.5).div_(0.5)
-    
-    return img 
-
-
-#########################################
-def load_training_arcfaces(fname):
-
+def load_training_arcfaces(fname, device):
     with open(fname) as f:
         labels = json.load(f)
-        
-    #print(labels)
+
     labels = collections.OrderedDict(labels)
     
     most_sim_arcs = dict()
@@ -124,33 +69,12 @@ def load_training_arcfaces(fname):
     labels_names = [fname.replace('\\', '/') for fname in labels.keys()]
     labels = [labels[fname.replace('\\', '/')] for fname in labels.keys()]
     
-    
-
-    #return 
-    #labels = np.array(list(labels.values()))
     labels = np.array(labels)
     labels = labels.astype({1: np.int64, 2: np.float32}[labels.ndim])
     return labels, labels_names, most_sim_arcs
 
-
 #########################################
-# uniform interpolation between two points in latent space
-def interpolate_points(p1, p2, n_steps=10):
-    # interpolate ratios between the points
-    ratios = torch.linspace(0, 1, num=n_steps)
-    # linear interpolate vectors
-    vectors = list()
-    for ratio in ratios:
-        v = (1.0 - ratio) * p1 + ratio * p2
-        
-        
-    vectors.append(v)
-    
-    #vectors = np.array(vectors)
-    return torch.cat(vectors, dim=0)
-
-#########################################
-def is_unique_id(tmp_arc, eval_arcs, too_similar_threshold):
+def is_unique_id(tmp_arc, eval_arcs, too_similar_threshold, logging):
     for arc_key, arc_val in eval_arcs.items(): 
         sim = cosine_similarity_torch(tmp_arc, arc_val)
 
@@ -160,11 +84,6 @@ def is_unique_id(tmp_arc, eval_arcs, too_similar_threshold):
             return False 
     
     return True 
-
-#########################################
-def compute_euclidean_distance(a, b):
-    euclid_dist = sum(((a - b)**2).reshape(512))
-    return euclid_dist
 
 #########################################
 
@@ -180,9 +99,6 @@ def check_if_face_centered(landmarks):
     return False 
 
 #########################################
-
-from torchvision.utils import save_image
-
 def save_images(img_list, NIR_img_list, folder, id):
 
     folder = os.path.join(folder, f"id_{id}")
@@ -193,13 +109,11 @@ def save_images(img_list, NIR_img_list, folder, id):
 
     for i, img in enumerate(img_list):
         NIR_img = NIR_img_list[i]
-        save_image(img, os.path.join(folder_VIS, f"sample_{i}_VIS.png"), normalize=True, range=(-1, 1))
-        save_image(NIR_img, os.path.join(folder_NIR, f"sample_{i}_NIR.png"), normalize=True, range=(-1, 1))
+        utils.save_image(img, os.path.join(folder_VIS, f"sample_{i}_VIS.png"), normalize=True, range=(-1, 1))
+        utils.save_image(NIR_img, os.path.join(folder_NIR, f"sample_{i}_NIR.png"), normalize=True, range=(-1, 1))
 
 #########################################
-#    
-
-def compare_to_samples_of_same_id(tmp_arcface_feat, first_arc, sample_arcs_list):
+def compare_to_samples_of_same_id(tmp_arcface_feat, first_arc, sample_arcs_list, threshold_for_same_ID, threshold_for_too_similar, logging):
     # compute similarity
     sim = cosine_similarity_torch(tmp_arcface_feat, first_arc)
     
@@ -213,13 +127,12 @@ def compare_to_samples_of_same_id(tmp_arcface_feat, first_arc, sample_arcs_list)
         prev_sim = cosine_similarity_torch(tmp_arcface_feat, prev_arc)
         if logging: print("... Sim to prev:", tmp_prev_ind, "=", prev_sim)
         if prev_sim > threshold_for_too_similar:
-            #bad_sample =  True 
             return False 
         
     return True 
 
 ###########################################
-def detect_face(tmp_img):
+def detect_face(tmp_img, mtcnn_model, device, logging):
     
     boxes, probs, landmarks = mtcnn_model.detect(tmp_img.permute(0, 2, 3, 1), landmarks=True)
     
@@ -245,153 +158,92 @@ def detect_face(tmp_img):
 
     return True 
 
+
 ###########################################
-if __name__ == "__main__":
+
+@click.command()
+
+# Configuration 
+@click.option('--gen_model', help='Path to pretrained identity-conditioned StyleGAN2 model (pkl file)', required=True)
+@click.option('--rec_model', help='Path to recognition model (pth file)', required=True)
+@click.option('--training_ids', help='Path to the .json file of identity features of the training dataset', metavar='PATH', required=True)
+@click.option('--outdir', help='Path to output folder', metavar='PATH', required=True)
+@click.option('--gpu', help='Which CUDA gpu to use [default: 0]', type=int, default=0, metavar='INT')
+@click.option('--ids', help='How many identities to generate [default: 100]', type=int, default=100, metavar='INT')
+@click.option('--samples_per_id', help='How many samples to generate for each identity [default: 32]', type=int, default=32, metavar='INT')
+@click.option('--all_or_one', help='Create one feature for each image [all], or one feature for each identity [one] [default: all]', default="all")
+@click.option('--truncation', help='What truncation factor to use during sampling', type=float, default=0.7, metavar='FLOAT')
+@click.option('--seed', help='Select a seed to use during sampling', type=int, default=0, metavar='INT')
+
+def main(**args):
+    print("Config:", args)
+    print("Current directory:", os.getcwd())
+
     torch.set_grad_enabled(False)
-
-    print("Current directory", os.getcwd())
-    # NEW MODEL 
+    device = f"cuda:{args['gpu']}"    
+    seed = args["seed"]
+    num_ids = args["ids"] 
+    samples_per_id = args["samples_per_id"]    
+    general_truncation_psi = args["truncation"]
     
-    # name = "07_08_NORM_ARC_label_NIR_weight_01_CONT_05_tufts_256_poses_1-7_HALF_IDs-000480" 
-    name = "17_08_NORM_ARC_MOST_SIM_label_CONTINUE_NIR_weight_05_tufts_256_poses_1-7_HALF_IDs-001042-000160"# TODO was "31_05_ID_split_Norm_ARC_most_sim_CONT_NIR_w_05_tufts_256_poses_1-7__801"  #"24_05_NORM_ARC_MOST_SIM_label_CONT_05_561"
-    # TODO was "31_05_ID_split_Norm_ARC_most_sim_CONT_NIR_w_05_tufts_256_poses_1"
-    # name = "31_05_with_loss_w_01_ID_split_Norm_ARC_most_sim_CONT_NIR_w_05_tufts_256_poses_1-7_001362-7-000561"
-    #name = "24_05_NORM_ARC_label_CONT_05_801"
-
-    ckpt = "EXPERIMENTS_ArcBiFaceGAN/"+ name  +".pkl"
-
-    
-
-    seed = 0
-    device = "cuda:1"
-    
-    num_ids = 1000 #1000 #250 #95 #95
-    samples_per_id = 32 #25
-    
-    output_folder = "SYNTHETIC_DATASETS/Fast_improved_ids_" + str(num_ids) + "_samples_" + str(samples_per_id) + "_" + name
-
-    arcface_multiplier = 4
-    
-    general_truncation_psi = 0.7 #0.7  
-
-
-    save_grids = True
-    save_NIR = True
-
-    normal_sample = False
-    training_arc = False
-    
-    change_slightly = False 
-    
-    compare_between_each_other = False 
-    experiment_z_sim = False 
-
-
     logging = False
 
-    # za dva standard deviationa razlike ... torej skor večina populacije .... .... 0.589
-    # za tri standard deviatione ... je pa že insane ... samo 1% 
-    # NOTE without blurry images ... and only a single set 
-    avg_similarity = 0.7764 
-    std_similarity = 0.0773
+    nrow = 4 # number of rows in grid images  
     
+    arcface_multiplier = 4
+    avg_similarity = 0.776
+    std_similarity = 0.077
     threshold_for_same_ID = avg_similarity - 2 * std_similarity
     threshold_for_same_ID = torch.from_numpy(np.array([threshold_for_same_ID])).to(device) 
     threshold_for_too_similar = avg_similarity + std_similarity
-
-
-    print("Seed:", seed)
-    #set_all_seeds(seed)
-
-    print(output_folder)
-    os.makedirs(output_folder, exist_ok=True)
     
-    network_pkl = ckpt
+    network_pkl = args["gen_model"]
     print('Loading networks from "%s"...' % network_pkl)
     with dnnlib.util.open_url(network_pkl) as f:
         G = legacy.load_network_pkl(f)['G_ema'].to(device)
-
-
     
-    
-    
-    arcface_model = prepare_locked_ArcFace_model().to(device)     
-
+    arcface_model = prepare_locked_ArcFace_model(args["rec_model"]).to(device)     
     mtcnn_model = MTCNN(select_largest=False, device=device)
+    _, _, all_arcs = load_training_arcfaces(args["training_ids"], device)
 
-    
-    avg_arc_sim = []
-
-    img_list = []
-
-    # TODO most similar
-    arcface_dataset_file = 'DATASETS/tufts_256_poses_1-7_aligned/train_labels_arcface_most_sim/dataset.json'    
-    #arcface_dataset_file = 'DATASETS/tufts_256_poses_1-7_aligned/train_labels_arcface/dataset.json'    
-    arcface_train_list, arc_file_names, all_arcs = load_training_arcfaces(arcface_dataset_file)
-
-    
-    #print(arcface_train_list)
-    print("Training arcs most sim:", all_arcs.keys())
     set_all_seeds(seed)
-    nrow = 4 
     
+    os.makedirs(args['outdir'], exist_ok=True)
+    print("Existing identities:", len(all_arcs.keys()))
     
-    first_id = None
-    id = 0 
+    max_attempts = 2500
 
+    id = 0 
     pbar = tqdm(total=num_ids)
 
-    #first_arc = [] 
     while id < num_ids:
-        
-       
-        #arcface_start = torch.nn.functional.normalize(torch.randn(1, 512, device=device), p=2, dim=1 )
         arcface_start = torch.randn(1, 512, device=device)
-        if logging: print("Initial max arc:", arcface_start.max(), " Min:", arcface_start.min(),)
-
         arcface_start = torch.nn.functional.normalize(arcface_start, p=2, dim=1)
+        arcface_feat = arcface_multiplier * arcface_start 
 
-        arcface_start = arcface_multiplier * arcface_start #TODO # was 8
-
-        if logging: print("NEW Max arc:", arcface_start.max(), " Min:", arcface_start.min(),)
-    
+        img_list = []; NIR_img_list = []; sample_arcs_list = []
         
-        z_start = torch.randn(1, 512, device=device)
-        arcface_feat = arcface_start # +  torch.nn.functional.normalize( torch.randn(1, 512, device=device) , p=2, dim=1) #arcface_start
-
-
-        img_list = []; NIR_img_list = []; avg_arc_sim = []; avg_arc_sim_to_train = []; tmp_arcs_for_comparison = []
-        samples_to_compare = random.sample(range(samples_per_id), 1)
-
-        sample_arcs_list = []
-
         current_sample = 0
-        first_z = None
         attempts = 0
-        max_attempts = 2500
         
         is_face_detected = False 
-
-        is_first_unique = False 
         enough_samples_per_id = True
 
         while current_sample < samples_per_id:
-            #print(".", end="")
             attempts += 1 
             if attempts > max_attempts: 
                 print("\nToo many failed samples... Skipping to new ID.")
                 enough_samples_per_id = False
                 break 
             
-            random_change = torch.randn(1, 512, device=device) #torch.randn_like(arcface_start, device=device)
-            z_feat = random_change #0.5 * z_start + 0.5 * random_change #0.7 * z_start + 0.3 * random_change # z_start + random_change
+            z_feat = torch.randn(1, 512, device=device) 
             
-            img, img_NIR = generate_image_from_z(z_feat, arcface_feat)    
+            img, img_NIR = generate_image_from_z(G, z_feat, arcface_feat, general_truncation_psi)    
             tmp_img = preprocess_generated_image_general(img)
 
             # check if a face is detected in the first sample 
             if  current_sample == 0: 
-                is_face_detected = detect_face(tmp_img)
+                is_face_detected = detect_face(tmp_img, mtcnn_model, device, logging)
 
                 # if not, generate new id            
                 if not is_face_detected:
@@ -402,16 +254,11 @@ if __name__ == "__main__":
             tmp_arcface_feat = arcface_model(img_tmp)
             tmp_arcface_feat = torch.nn.functional.normalize(tmp_arcface_feat,  p=2, dim=1 )
 
-            # check if the first sample is a unique id
-            # TODO druga ideja:  if first sample of ID is unique ... then also check if others are (if not then generate new sample) let the counter quit it
-            # previous problem was we quit them even if only one was not good
-            
             # if first sample isn't unique, find new ID
-            new_unique_id = is_unique_id(tmp_arcface_feat, all_arcs, threshold_for_same_ID)
+            new_unique_id = is_unique_id(tmp_arcface_feat, all_arcs, threshold_for_same_ID, logging)
             if  current_sample == 0:
                 if not new_unique_id: break 
-                else: is_first_unique = True 
-
+                
             # check if other samples are also unique, but don't break entire loop if not   
             else: 
                 if not new_unique_id: continue 
@@ -421,19 +268,14 @@ if __name__ == "__main__":
             if current_sample == 0: 
                 first_arc = tmp_arcface_feat
             else:
-                similar_to_samples_of_same_id = compare_to_samples_of_same_id(tmp_arcface_feat,first_arc, sample_arcs_list)
+                similar_to_samples_of_same_id = compare_to_samples_of_same_id(tmp_arcface_feat,first_arc, sample_arcs_list,  threshold_for_same_ID, threshold_for_too_similar, logging)
                 if not similar_to_samples_of_same_id: continue 
-
-            # TODO ... cleanup stuff
-            #if current_sample in samples_to_compare: 
-            tmp_arcs_for_comparison.append(tmp_arcface_feat)
-
-            
+       
             # append to lists
             img_list.append(img)
             sample_arcs_list.append(tmp_arcface_feat)
 
-            if save_NIR: NIR_img_list.append(img_NIR)
+            NIR_img_list.append(img_NIR)
 
             current_sample+=1 
 
@@ -447,32 +289,29 @@ if __name__ == "__main__":
         
 
         # save images 
-        grid = utils.save_image(
+        utils.save_image(
                 torch.cat(img_list, dim=0),
-                #torch.cat(full_list, 0),
-                f"{output_folder}/id_{id}_samples_VIS.png",#_{ind}.png",
+                f"{args['outdir']}/id_{id}_samples_VIS.png",#_{ind}.png",
                 normalize=True,
                 range=(-1, 1),
                 nrow=int(int(samples_per_id)/nrow),
             )
-
-        if save_NIR: 
-            grid = utils.save_image(
-                torch.cat(NIR_img_list, dim=0),
-                f"{output_folder}/id_{id}_samples_NIR.png",#_{ind}.png",
-                normalize=True,
-                range=(-1, 1),
-                nrow=int(int(samples_per_id)/nrow)#int(int(n_sample)/5),
-            )
         
-        save_images(img_list, NIR_img_list, output_folder, id)
-
-        # print("\n")
-        # print("===" * 20)
-
+        utils.save_image(
+            torch.cat(NIR_img_list, dim=0),
+            f"{args['outdir']}/id_{id}_samples_NIR.png",#_{ind}.png",
+            normalize=True,
+            range=(-1, 1),
+            nrow=int(int(samples_per_id)/nrow)#int(int(n_sample)/5),
+        )
+    
+        save_images(img_list, NIR_img_list, args['outdir'], id)
         
         id+=1
-        # print("Generate new id", id)
         pbar.update(1)
 
     pbar.close()
+
+
+if __name__ == "__main__":
+    main()
