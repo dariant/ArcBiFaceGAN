@@ -167,16 +167,16 @@ class ImageFolderDataset(Dataset):
         resolution      = None, # Ensure specific resolution, None = highest available.
         **super_kwargs,         # Additional arguments for the Dataset base class.
     ):
-        self._path = path 
+        self._path = os.path.join(path, "VIS") 
         self._zipfile = None
 
         #self.image_path = self._path + "/images"
         #print(self._path)
         self.mask_path = "/".join(self._path.split("/")[:-1]) + "/masks"
 
-        self.path_NIR = "/".join(self._path.split("/")[:-1]) + "/NIR"
+        self.path_NIR = os.path.join(path, "NIR")  #"/".join(self._path.split("/")[:-1]) + "/NIR"
         #print(self.mask_path)
-
+        print("Dataset path:", self._path)
         if os.path.isdir(self._path):
             self._type = 'dir'
             
@@ -199,6 +199,7 @@ class ImageFolderDataset(Dataset):
         #if len(self._mask_fnames) == 0:
         #    raise IOError('No Masks files found in the specified path')
         if len(self._NIR_fnames) == 0:
+            print("Path to NIR:", self.path_NIR)
             raise IOError('No NIR files found in the specified path')
         
 
@@ -262,26 +263,19 @@ class ImageFolderDataset(Dataset):
 
     def _load_raw_mask(self, raw_idx):
         fname = self._mask_fnames[raw_idx]
-        #print("Mask file_name:", fname)
         with self._open_file(self.mask_path, fname) as f:
             if pyspng is not None and self._file_ext(fname) == '.png':
                 mask = pyspng.load(f.read())
             else:
-                mask = np.array(PIL.Image.open(f))#[:, :#, 0]
-                #print("AHEM")
-                #print("===" * 30)
-                #print(mask.shape)
+                mask = np.array(PIL.Image.open(f))
         if mask.ndim == 2:
             mask = mask[:, :, np.newaxis] # HW => HWC
 
-        #print(mask.shape)
         mask = mask.transpose(2, 0, 1) # HWC => CHW
-        #print(mask.shape)
-        #print(mask.shape)
         return mask
 
     def back_load_raw_labels(self):
-        fname = 'dataset.json'
+        fname = 'identity_features.json'
         if fname not in self._all_fnames:
             return None
         with self._open_file(self._path, fname) as f:
@@ -295,25 +289,15 @@ class ImageFolderDataset(Dataset):
         return labels
     
     def _load_raw_labels(self):
-        # TODO changed for classes 
-        fname = 'dataset.json'
-        #image_fnames = os.listdir(folder + "images")
+        fname = 'identity_features.json'
         with self._open_file(os.path.join(self._path, '..'), fname) as f:
             labels = json.load(f)
         
-        
-
-        #print(labels)
         labels = collections.OrderedDict(labels)
         labels = [labels[fname.replace('\\', '/')] for fname in self._image_fnames]
-        
-        
-        
-        #return 
-        #labels = np.array(list(labels.values()))
+
         labels = np.array(labels)
-        #print(labels.ndim)
-        #print(labels.shape)
+
         labels = labels.astype({1: np.int64, 2: np.float32}[labels.ndim])
         return labels
         
