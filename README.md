@@ -1,8 +1,5 @@
 # ArcBiFaceGAN: Generating Bimodal Privacy-Preserving Data for Face Recognition
 
-
-<!-- ![Teaser image](./docs/ArcBiFaceGAN_pipeline.png) -->
-
 **ArcBiFaceGAN: Generating Bimodal Privacy-Preserving Data for Face Recognition**<br>
 Darian Tomašević, Fadi Boutros, Naser Damer, Peter Peer, Vitomir Štruc<br>
 LINK_TO_BE_ADDED<br>
@@ -25,6 +22,9 @@ methods or even small-scale real-world datasets. Employing both visible and near
 also results in higher recognition accuracy on real-world visible spectrum benchmarks. Thus, training
 with multispectral data could potentially improve existing recognition systems that utilize only the visible
 spectrum, without the need for additional sensors.*
+
+
+<img src="./docs/ArcBiFaceGAN_framework.jpg" alt="ArcBiFaceGAN_framework" width="500"/>
 
 # Release Notes: 
 
