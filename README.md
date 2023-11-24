@@ -54,7 +54,7 @@ To run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBi
 
 ## Step 1. Prepare the training dataset:
 
-.... The dataset should contain a `VIS` directory with visible spectrum images, and a `NIR` directory with corresponding near-infrared images. 
+To prepare the dataset of face images follow the structure found in `DATASETS/example_dataset`. The dataset should contain a `VIS` directory with visible spectrum images, and a `NIR` directory with corresponding near-infrared images. 
 Images should use the naming convention `{identity}_{sample_name}.jpg`. Corresponding images in the `VIS` and `NIR` directories should share the same name. 
 
 ## Step 2. Add identity features to the training dataset:
