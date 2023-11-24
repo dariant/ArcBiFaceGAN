@@ -49,6 +49,32 @@ How to build the Docker environment:
 docker build --tag sg2ada:latest .
 ```
 
+# How to Run (using Docker): 
+To run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBiFaceGAN.ipynb) Jupyter Notebook, or follow these steps:
+
+## Step 1. Prepare the training dataset:
+
+.... The dataset should contain a `VIS` directory with visible spectrum images, and a `NIR` directory with corresponding near-infrared images. 
+Images should use the naming convention `{identity}_{sample_name}.jpg`. Corresponding images in the `VIS` and `NIR` directories should share the same name. 
+
+## Step 2. Add identity features to the training dataset:
+
+TODO
+
+
+## Step 3. Train the identity-conditioned StyleGAN2 model:
+
+TODO 
+
+For details on other arguments and the configurations check the [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch) documentation.
+
+
+## Step 4. Generate synthetic recognition datasets: <br>
+
+TODO
+
+
+
 # Acknowledgements
 
 Supported in parts by the Slovenian Research and Innovation Agency ARIS through the Research Programmes P2-0250(B) "Metrology and Biometric Systems" and P2--0214 (A) “Computer Vision”, the ARIS Project J2-2501(A) "DeepBeauty" and the ARIS Young Researcher Program.
