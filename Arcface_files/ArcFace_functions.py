@@ -24,13 +24,12 @@ def preprocess_image_for_ArcFace(img):
     return img 
 
 #########################################
-def prepare_locked_ArcFace_model():
+def prepare_locked_ArcFace_model(rec_model_path):
     arcface_model = get_model("r100", fp16=True) # TODO turned to true
-    arcface_weights = "Arcface_files/ArcFace_r100_ms1mv3_backbone.pth"
-    arcface_model.load_state_dict(torch.load(arcface_weights))
+    #arcface_weights = "Arcface_files/ArcFace_r100_ms1mv3_backbone.pth"
+    arcface_model.load_state_dict(torch.load(rec_model_path))
     arcface_model.eval()
     for param in arcface_model.parameters():
         param.requires_grad = False
     
-    #print(arcface_model)
     return arcface_model
