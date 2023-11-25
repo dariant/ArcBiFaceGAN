@@ -168,10 +168,9 @@ def detect_face(tmp_img, mtcnn_model, device, logging):
 @click.option('--rec_model', help='Path to recognition model (pth file)', required=True)
 @click.option('--training_ids', help='Path to the .json file of identity features of the training dataset', metavar='PATH', required=True)
 @click.option('--outdir', help='Path to output folder', metavar='PATH', required=True)
-@click.option('--gpu', help='Which CUDA gpu to use [default: 0]', type=int, default=0, metavar='INT')
+@click.option('--gpu_device_number', help='Which CUDA gpu to use [default: 0]', type=int, default=0, metavar='INT')
 @click.option('--ids', help='How many identities to generate [default: 100]', type=int, default=100, metavar='INT')
 @click.option('--samples_per_id', help='How many samples to generate for each identity [default: 32]', type=int, default=32, metavar='INT')
-@click.option('--all_or_one', help='Create one feature for each image [all], or one feature for each identity [one] [default: all]', default="all")
 @click.option('--truncation', help='What truncation factor to use during sampling', type=float, default=0.7, metavar='FLOAT')
 @click.option('--seed', help='Select a seed to use during sampling', type=int, default=0, metavar='INT')
 
@@ -180,7 +179,7 @@ def main(**args):
     print("Current directory:", os.getcwd())
 
     torch.set_grad_enabled(False)
-    device = f"cuda:{args['gpu']}"    
+    device = f"cuda:{args['gpu_device_number']}"    
     seed = args["seed"]
     num_ids = args["ids"] 
     samples_per_id = args["samples_per_id"]    
