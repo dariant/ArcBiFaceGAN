@@ -4,8 +4,6 @@
 Darian Tomašević, Fadi Boutros, Naser Damer, Peter Peer, Vitomir Štruc<br>
 LINK_TO_BE_ADDED<br>
 
-<img align="right"  src="./docs/ArcBiFaceGAN_framework.jpg" width=35%> 
-<!--img src="./docs/ArcBiFaceGAN_framework.jpg" alt="ArcBiFaceGAN_framework" width="500"/-->
 
 
 Abstract : *The performance of state-of-the-art face recognition systems depends crucially on the availability of
@@ -27,6 +25,10 @@ also results in higher recognition accuracy on real-world visible spectrum bench
 with multispectral data could potentially improve existing recognition systems that utilize only the visible
 spectrum, without the need for additional sensors.*
 
+<!--img align="right"  src="./docs/ArcBiFaceGAN_framework.jpg" width=35%--> 
+<p align="center">
+<img src="./docs/ArcBiFaceGAN_framework.jpg" alt="ArcBiFaceGAN_framework" width="500"/>
+</p> 
 
 ## Release Notes: 
 
