@@ -87,7 +87,22 @@ To generate data using ArcBiFaceGAN use the `generate_recognition_data.py` scrip
 ```
 Here `--gen_model` should point to the `.pkl` file of the identity-conditioned StyleGAN2 model that was trained in the previous step. The path to the recognition model used for filtering should be specified via `--rec_model` and the path to the `.json` file of training identity features (i.e. identities of real-world subjects) should be given via `--training_ids`. The output directory can also be specified with `--outdir` and the GPU device can also be selected with `--gpu_device_number`.  The amount of identities to generate can also be set with `--ids`, while the amount of samples per identity is controlled with `--samples_per_id`. The truncation of the latent space can also be set with `--truncation` and the seed can be chosen with `--seed`.
 
-# Acknowledgements
+
+## License
+
+Copyright &copy; 2021, NVIDIA Corporation. All rights reserved.
+
+This work is made available under the [Nvidia Source Code License](https://nvlabs.github.io/stylegan2-ada-pytorch/license.html).
+
+## Citation
+
+If you use code or results from this repository, please cite the following publication:
+
+```
+To be added.
+```
+
+## Acknowledgements
 
 Supported in parts by the Slovenian Research and Innovation Agency ARIS through the Research Programmes P2-0250(B) "Metrology and Biometric Systems" and P2--0214 (A) “Computer Vision”, the ARIS Project J2-2501(A) "DeepBeauty" and the ARIS Young Researcher Program.
 
