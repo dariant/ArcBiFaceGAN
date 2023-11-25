@@ -1,0 +1,6 @@
+.cache
+.cache/*
+DATASETS/*
+EXPERIMENTS/training_output/*
+EXPERIMENTS/synthetic_output/*
+Arcface_files/__pycache__
