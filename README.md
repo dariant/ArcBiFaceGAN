@@ -46,14 +46,21 @@ This repository follows the [Nvidia Source Code License](https://nvlabs.github.i
 * We highly recommend using Docker to setup the environment. Please use the [provided Dockerfile](./Dockerfile) to build an image with the required library dependencies. (The Docker image requires NVIDIA driver release `r455.23` or later.)
 * Otherwise the requirements remain the same as in  [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch). These being 64-bit Python 3.7, PyTorch 1.7.1, and CUDA toolkit 11.0 or later. Use at least version 11.1 if running on RTX 3090. Check the linked repository if you are having any problems.
 
-
 How to build the Docker environment: 
 ```.bash
 docker build --tag sg2ada:latest .
 ```
 
-## How to Run (using Docker): 
-To run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBiFaceGAN.ipynb) Jupyter Notebook, or follow these steps:
+## Download links for the pretrained models:
+You can use the following pretrained models to generate the synthetic data used in the research paper (i.e. skip to Step 4)
+*  [identity conditioned StyleGAN2](https://unilj-my.sharepoint.com/:u:/g/personal/darian_tomasevic_fri1_uni-lj_si/ET2lpGwcIjlNhZEBnYxPDwYBgGcVl08rrXJvY4U3t3KWMg?e=Vjahfd)
+*  [ArcFace recognition model](https://unilj-my.sharepoint.com/:u:/g/personal/darian_tomasevic_fri1_uni-lj_si/EfSmDfvsVlZEuOBqieDl4zEBJkTJ65aBnUtrC4q5nT2a-g?e=PBYj7o)
+
+You can also train your own generative model using steps below.
+
+
+## How to run (using Docker): 
+To train and run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBiFaceGAN.ipynb) Jupyter Notebook, or follow these steps:
 
 ## Step 1. Prepare the training dataset:
 
