@@ -86,7 +86,7 @@ def setup_training_loop_kwargs(
     args.num_gpus = gpus
 
     if gpus == 1:
-        args.GPU_DEVICE_NUMBER = gpu_device_number 
+        args.gpu_device_number = gpu_device_number 
 
 
     if snap is None:
@@ -439,7 +439,7 @@ class CommaSeparatedList(click.ParamType):
 
 # Dataset.
 @click.option('--data', help='Training data (directory or zip)', metavar='PATH', required=True)
-@click.option('--cond', help='Train conditional model based on dataset labels [default: false]', type=bool, metavar='BOOL')
+@click.option('--cond', help='Train conditional model based on dataset labels [default: True]', default=True, type=bool, metavar='BOOL')
 @click.option('--subset', help='Train with only N images [default: all]', type=int, metavar='INT')
 @click.option('--mirror', help='Enable dataset x-flips [default: false]', type=bool, metavar='BOOL')
 
@@ -466,7 +466,7 @@ class CommaSeparatedList(click.ParamType):
 @click.option('--allow-tf32', help='Allow PyTorch to use TF32 internally', type=bool, metavar='BOOL')
 @click.option('--workers', help='Override number of DataLoader workers', type=int, metavar='INT')
 
-@click.option('--GPU_DEVICE_NUMBER', help='Which GPU to train on', type=int, metavar='INT')
+@click.option('--gpu_device_number', help='Which GPU to train on', type=int, metavar='INT')
 @click.option('--NIR_loss_weight', help='Which GPU to train on', type=float)
 
 

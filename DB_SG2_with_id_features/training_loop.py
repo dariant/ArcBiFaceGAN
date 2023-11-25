@@ -187,11 +187,11 @@ def training_loop(
     abort_fn                = None,     # Callback function for determining whether to abort training_scripts_DB_SG2. Must return consistent results across ranks.
     progress_fn             = None,     # Callback function for updating training progress. Called for all ranks.
     TRAIN_IMG_OR_NIR_OR_MASK = "NIR",
-    GPU_DEVICE_NUMBER = 0, 
+    gpu_device_number = 0, 
 ):
     # Initialize.
     start_time = time.time()
-    device = torch.device('cuda', GPU_DEVICE_NUMBER)
+    device = torch.device('cuda', gpu_device_number)
     np.random.seed(random_seed * num_gpus + rank)
     torch.manual_seed(random_seed * num_gpus + rank)
     torch.backends.cudnn.benchmark = cudnn_benchmark    # Improves training speed.
