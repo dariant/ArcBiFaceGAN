@@ -26,7 +26,7 @@ spectrum, without the need for additional sensors.*
 
 <img src="./docs/ArcBiFaceGAN_framework.jpg" alt="ArcBiFaceGAN_framework" width="500"/>
 
-# Release Notes: 
+## Release Notes: 
 
 The ArcBiFaceGAN PyTorch framework allows for the generation of large-scale recognition datasets of visible and near-infrared privacy-preserving face images. 
 
@@ -34,7 +34,7 @@ The framework is made up of an identity-conditioned Dual-Branch StyleGAN2, based
 
 This repository follows the [Nvidia Source Code License](https://nvlabs.github.io/stylegan2-ada-pytorch/license.html).
 
-# Requirements and Setup:
+## Requirements and Setup:
 
 * Linux and Windows are supported, but we recommend Linux for performance and compatibility reasons.
 * 1&ndash;8 high-end NVIDIA GPUs with at least 12 GB of memory. We have tested our implementation on a NVIDIA RTX 3060 GPU and a NVIDIA RTX 3090 GPU. Parallelization across multiple GPUs are also supported for training the DB-StyleGAN2 network.
@@ -47,7 +47,7 @@ How to build the Docker environment:
 docker build --tag sg2ada:latest .
 ```
 
-# How to Run (using Docker): 
+## How to Run (using Docker): 
 To run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBiFaceGAN.ipynb) Jupyter Notebook, or follow these steps:
 
 ## Step 1. Prepare the training dataset:
