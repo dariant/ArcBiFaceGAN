@@ -64,14 +64,14 @@ To create identity features of the training images use the script `create_traini
 ```
 
 Here the `--rec_model` should point to the `.pth` file of a pretrained recognition model.
-Additional options also include `--gpu` that determines which GPU to use (e.g. `--gpu=0`) and `--all_or_one` that determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`). 
+Additional options also include `--gpu_device_number` that determines which GPU to use (e.g. `--gpu_device_number=0`) and `--all_or_one` that determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`). 
 
 ## Step 3. Train the identity-conditioned StyleGAN2 model:
 
 To train the identity-conditioned StyleGAN2 of ArcBiFaceGAN use the `training.py` script as follows:   
 ```.bash
 ./docker_run.sh python training.py --data="DATASETS/example_dataset"  --outdir="EXPERIMENTS/training_output" --NIR_loss_weight=0.1 
- --cfg="auto" --snap=20 --batch=12 --mirror=1 --gpus=1 --GPU_DEVICE_NUMBER=0 --cond=1
+ --cfg="auto" --snap=20 --batch=12 --mirror=1 --gpus=1 --gpu_device_number=0 --cond=1
 ```
 Here `--data` should point to the training dataset and `--outdir` to the output directory. To determine the weight of the NIR Discriminator on the final loss, set the `--NIR_loss_weight` accordingly. Regarding the other parameters, `--cfg` determines the model configuration (e.g. number of blocks), `--snap` defines the frequency of snapshots during training,  `--batch` is the batch size,  `--mirror=1` enables horizontal flipping of training images while `--cond=1` enables training based on the identity condition. Regarding the GPU usage, set the amount of available GPUs with `--gpus` or set the `--GPU_DEVICE_NUMBER` to determine which GPU to use. 
 
@@ -81,9 +81,11 @@ For details on other possible arguments and available configurations check the [
 
 ## Step 4. Generate synthetic recognition datasets: <br>
 
-TODO
-
-
+To generate data using ArcBiFaceGAN use the `generate_recognition_data.py` script as follows:
+```.bash
+./docker_run.sh python generate_recognition_data.py --gen_model={path_to_trained_gen_model}  --rec_model={path_to_recognition_model} --outdir="EXPERIMENTS/synthetic_output/example_dir" --training_ids="DATASETS/example_dataset/identity_features.json" --gpu_device_number=0 --ids=100 --samples_per_id=32 --seed=0
+```
+Here `--gen_model` should point to the `.pkl` file of the identity-conditioned StyleGAN2 model that was trained in the previous step. The path to the recognition model used for filtering should be specified via `--rec_model` and the path to the `.json` file of training identity features (i.e. identities of real-world subjects) should be given via `--training_ids`. The output directory can also be specified with `--outdir` and the GPU device can also be selected with `--gpu_device_number`.  The amount of identities to generate can also be set with `--ids`, while the amount of samples per identity is controlled with `--samples_per_id`. The truncation of the latent space can also be set with `--truncation` and the seed can be chosen with `--seed`.
 
 # Acknowledgements
 
