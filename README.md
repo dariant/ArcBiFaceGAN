@@ -31,6 +31,8 @@ spectrum, without the need for additional sensors.*
 <img src="./docs/ArcBiFaceGAN_framework.jpg" alt="ArcBiFaceGAN_framework" width="500"/>
 </p--> 
 
+---
+
 ## Release Notes: 
 
 The ArcBiFaceGAN PyTorch framework allows for the generation of large-scale recognition datasets of visible and near-infrared privacy-preserving face images. 
@@ -39,6 +41,8 @@ The framework is made up of an identity-conditioned Dual-Branch StyleGAN2, based
 
 This repository follows the [Nvidia Source Code License](https://nvlabs.github.io/stylegan2-ada-pytorch/license.html).
 
+---
+
 ## Requirements and Setup:
 
 * Linux and Windows are supported, but we recommend Linux for performance and compatibility reasons.
@@ -46,19 +50,31 @@ This repository follows the [Nvidia Source Code License](https://nvlabs.github.i
 * We highly recommend using Docker to setup the environment. Please use the [provided Dockerfile](./Dockerfile) to build an image with the required library dependencies. (The Docker image requires NVIDIA driver release `r455.23` or later.)
 * Otherwise the requirements remain the same as in  [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch). These being 64-bit Python 3.7, PyTorch 1.7.1, and CUDA toolkit 11.0 or later. Use at least version 11.1 if running on RTX 3090. Check the linked repository if you are having any problems.
 
-
 How to build the Docker environment: 
 ```.bash
 docker build --tag sg2ada:latest .
 ```
 
-## How to Run (using Docker): 
-To run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBiFaceGAN.ipynb) Jupyter Notebook, or follow these steps:
+---
+
+## Download links for the pretrained models:
+You can use the following pretrained models to generate the synthetic data used in the research paper (i.e. skip to Step 4)
+*  [identity conditioned StyleGAN2](https://unilj-my.sharepoint.com/:u:/g/personal/darian_tomasevic_fri1_uni-lj_si/ET2lpGwcIjlNhZEBnYxPDwYBgGcVl08rrXJvY4U3t3KWMg?e=Vjahfd)
+*  [ArcFace recognition model](https://unilj-my.sharepoint.com/:u:/g/personal/darian_tomasevic_fri1_uni-lj_si/EfSmDfvsVlZEuOBqieDl4zEBJkTJ65aBnUtrC4q5nT2a-g?e=PBYj7o)
+
+You can also train your own generative model as described below.
+
+--- 
+
+# How to run (using Docker): 
+To train and run the ArcBiFaceGAN framework use the [`main_ArcBiFaceGAN.ipynb`](main_ArcBiFaceGAN.ipynb) Jupyter Notebook, or follow these steps:
 
 ## Step 1. Prepare the training dataset:
 
 To prepare the dataset of face images follow the structure found in `DATASETS/example_dataset`. The dataset should contain a `VIS` directory with visible spectrum images, and a `NIR` directory with corresponding near-infrared images. 
 Images should use the naming convention `{identity}_{sample_name}.jpg`. Corresponding images in the `VIS` and `NIR` directories should share the same name. 
+
+---
 
 ## Step 2. Add identity features to the training dataset:
 
@@ -71,6 +87,8 @@ The script relies on the following arguments:
 * `--rec_model` should point to the `.pth` file of a pretrained recognition model
 * `--gpu_device_number` determines which GPU to use (e.g. `--gpu_device_number=0`)
 *  `--all_or_one`  determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`)
+
+---
 
 ## Step 3. Train the identity-conditioned StyleGAN2 model:
 
@@ -95,6 +113,8 @@ To continue training from a saved checkpoint use the `--resume` argument, i.e. `
 
 For details on other possible arguments and available configurations check the [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch) documentation.
 
+---
+
 ## Step 4. Generate synthetic recognition datasets: <br>
 
 To generate data using ArcBiFaceGAN use the `generate_recognition_data.py` script as follows:
@@ -112,11 +132,15 @@ The script relies on the following arguments:
 * `--truncation` controls the truncation factor of the latent space (see the [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch) documentation)
 *  `--gpu_device_number` determines which GPU device to use (e.g. `0` or `1`)
 
+---
+
 ## License
 
 Copyright &copy; 2021, NVIDIA Corporation. All rights reserved.
 
 This work is made available under the [Nvidia Source Code License](https://nvlabs.github.io/stylegan2-ada-pytorch/license.html).
+
+---
 
 ## Citation
 
@@ -125,6 +149,8 @@ If you use code or results from this repository, please cite the following publi
 ```
 To be added.
 ```
+
+---
 
 ## Acknowledgements
 

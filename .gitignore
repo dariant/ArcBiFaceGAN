@@ -4,3 +4,5 @@ DATASETS/*
 EXPERIMENTS/training_output/*
 EXPERIMENTS/synthetic_output/*
 Arcface_files/__pycache__
+Arcface_files/backbones/__pycache__
+.config/*
