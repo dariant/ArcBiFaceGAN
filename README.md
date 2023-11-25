@@ -62,18 +62,29 @@ To create identity features of the training images use the script `create_traini
 ```.bash
 ./docker_run.sh python create_training_identity_features.py --data_folder="DATASETS/example_dataset" --rec_model={path_to_recognition_model}
 ```
-
-Here the `--rec_model` should point to the `.pth` file of a pretrained recognition model.
-Additional options also include `--gpu_device_number` that determines which GPU to use (e.g. `--gpu_device_number=0`) and `--all_or_one` that determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`). 
+The script relies on the following arguments: 
+* `--rec_model` should point to the `.pth` file of a pretrained recognition model
+* `--gpu_device_number` determines which GPU to use (e.g. `--gpu_device_number=0`)
+*  `--all_or_one`  determines whether to use identity features of each image in the dataset (`all`) or one most representative identity feature per identity (`one`)
 
 ## Step 3. Train the identity-conditioned StyleGAN2 model:
 
 To train the identity-conditioned StyleGAN2 of ArcBiFaceGAN use the `training.py` script as follows:   
 ```.bash
 ./docker_run.sh python training.py --data="DATASETS/example_dataset"  --outdir="EXPERIMENTS/training_output" --NIR_loss_weight=0.1 
- --cfg="auto" --snap=20 --batch=12 --mirror=1 --gpus=1 --gpu_device_number=0 --cond=1
+ --cfg="auto" --snap=20 --batch=12 --mirror=1 --gpus=1 --gpu_device_number=0
 ```
-Here `--data` should point to the training dataset and `--outdir` to the output directory. To determine the weight of the NIR Discriminator on the final loss, set the `--NIR_loss_weight` accordingly. Regarding the other parameters, `--cfg` determines the model configuration (e.g. number of blocks), `--snap` defines the frequency of snapshots during training,  `--batch` is the batch size,  `--mirror=1` enables horizontal flipping of training images while `--cond=1` enables training based on the identity condition. Regarding the GPU usage, set the amount of available GPUs with `--gpus` or set the `--GPU_DEVICE_NUMBER` to determine which GPU to use. 
+The script relies on the following arguments: 
+* `--data` should point to the training dataset with `VIS` and `NIR` subdirectories
+* `--outdir` determines the output directory
+* `--NIR_loss_weight` defines the weight of the NIR Discriminator in the final loss calculation
+* `--cfg` determines the model configuration (e.g. number of blocks, image resolution)
+* `--snap` defines the frequency of snapshots during training
+* `--batch` determines the batch size
+* `--mirror=1` enables horizontal flipping of training images
+* `--gpu_device_number` determines which GPU to use, if you want to use one
+* `--gpus` determines the amount of available GPUs, if you want to use multiple (only works in certain environments)
+* `--cond=0` can be used to disable training based on the identity condition
 
 To continue training from a saved checkpoint use the `--resume` argument, i.e. `--resume={path_to_pretrained_model}`. 
 
@@ -85,8 +96,16 @@ To generate data using ArcBiFaceGAN use the `generate_recognition_data.py` scrip
 ```.bash
 ./docker_run.sh python generate_recognition_data.py --gen_model={path_to_trained_gen_model}  --rec_model={path_to_recognition_model} --outdir="EXPERIMENTS/synthetic_output/example_dir" --training_ids="DATASETS/example_dataset/identity_features.json" --gpu_device_number=0 --ids=100 --samples_per_id=32 --seed=0
 ```
-Here `--gen_model` should point to the `.pkl` file of the identity-conditioned StyleGAN2 model that was trained in the previous step. The path to the recognition model used for filtering should be specified via `--rec_model` and the path to the `.json` file of training identity features (i.e. identities of real-world subjects) should be given via `--training_ids`. The output directory can also be specified with `--outdir` and the GPU device can also be selected with `--gpu_device_number`.  The amount of identities to generate can also be set with `--ids`, while the amount of samples per identity is controlled with `--samples_per_id`. The truncation of the latent space can also be set with `--truncation` and the seed can be chosen with `--seed`.
-
+The script relies on the following arguments: 
+* `--gen_model` should point to the `.pkl` file of the identity-conditioned StyleGAN2 model that was trained in the previous step
+* `--rec_model` should point to the `.pth` file of the pretrained recognition model to be used for filtering
+* `--training_ids` should point to the  `.json` file of training identity features (i.e. identities of real-world subjects)
+*  `--outdir` determines the output directory
+* `--ids` defines the amount of synthetic identities to be generated
+* `--samples_per_id` controls the amount of samples to be generated per synthetic identity
+* `--seed` determines which starting seed to use 
+* `--truncation` controls the truncation factor of the latent space (see the [StyleGAN2-ADA](https://github.com/NVlabs/stylegan2-ada-pytorch) documentation)
+*  `--gpu_device_number` determines which GPU device to use (e.g. `0` or `1`)
 
 ## License
 
