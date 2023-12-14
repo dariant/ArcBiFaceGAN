@@ -62,7 +62,7 @@ def load_training_arcfaces(fname, device):
     for k in labels.keys():
         id_key = k.split("_")[0]
         if id_key in most_sim_arcs: 
-            break
+            continue
 
         most_sim_arcs[id_key] = torch.from_numpy(np.array(labels[k]))[None, :].to(device)
 
@@ -136,7 +136,6 @@ def detect_face(tmp_img, mtcnn_model, device, logging):
     
     boxes, probs, landmarks = mtcnn_model.detect(tmp_img.permute(0, 2, 3, 1), landmarks=True)
     
-    # TODO FIX NE RABIS TOK PREGLEDAT ..
     # if no face detected or too many faces
     if len(landmarks) == 0 or len(landmarks) > 1 or landmarks[0] is None:
         if logging: print("Either no face or too many faces", len(landmarks))
