@@ -2,7 +2,7 @@
 
 **ArcBiFaceGAN: Generating Bimodal Privacy-Preserving Data for Face Recognition**<br>
 Darian Tomašević, Fadi Boutros, Naser Damer, Peter Peer, Vitomir Štruc<br>
-LINK_TO_BE_ADDED<br>
+[ArcBiFaceGAN paper](https://www.sciencedirect.com/science/article/pii/S0952197624006535)<br>
 
 
 
