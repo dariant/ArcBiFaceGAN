@@ -147,7 +147,15 @@ This work is made available under the [Nvidia Source Code License](https://nvlab
 If you use code or results from this repository, please cite the following publication:
 
 ```
-To be added.
+@article{tomavsevic2024arcbifacegan,
+  title={Generating bimodal privacy-preserving data for face recognition},
+  author={Toma{\v{s}}evi{\'c}, Darian and Boutros, Fadi and Damer, Naser and Peer, Peter and {\v{S}}truc, Vitomir},
+  journal={Engineering Applications of Artificial Intelligence (EAAI)},
+  volume={133},
+  pages={108495},
+  year={2024},
+  publisher={Elsevier}
+}
 ```
 
 ---
